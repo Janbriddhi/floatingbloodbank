@@ -1,3 +1,4 @@
+
 services:
     app:
         build:
@@ -45,12 +46,25 @@ services:
         image: redis:latest
         networks:
             - laravel
-
+    postgres:
+        image: postgres:17.4
+        container_name: postgres-db
+        restart: unless-stopped
+        environment:
+            POSTGRES_USER: admin
+            POSTGRES_PASSWORD: admin
+            POSTGRES_DB: laravel
+        ports:
+          - 5432:5432
+        volumes:
+          - postgres:/var/lib/postgressql
+        networks:
+          - laravel
 
 networks:
     laravel:
         driver: bridge
 
 volumes:
-    mysql:
-        driver: local
+    postgres:
+          driver: local
