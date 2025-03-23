@@ -1,0 +1,56 @@
+services:
+    app:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        restart: unless-stopped
+        working_dir: /var/www/
+        ports:
+            - "80:80"
+            - "5173:5173"
+        volumes:
+            - ./:/var/www
+        depends_on:
+            - redis
+            - node
+        networks:
+            - laravel
+        environment:
+            XDEBUG_MODE: debug,develop
+            XDEBUG_CONFIG: "client_host=host.docker.internal client_port=9003"
+        extra_hosts:
+            - "host.docker.internal:host-gateway"
+
+    nginx:
+        image: nginx:alpine
+        restart: unless-stopped
+        ports:
+            - "8000:80"
+        volumes:
+            - ./:/var/www
+            - ./docker/nginx/:/etc/nginx/conf.d/
+        networks:
+            - laravel
+
+    node:
+        image: node:22
+        restart: unless-stopped
+        working_dir: /var/www
+        volumes:
+            - ./:/var/www
+        networks:
+            - laravel
+
+    redis:
+        image: redis:latest
+        networks:
+            - laravel
+
+
+networks:
+    laravel:
+        driver: bridge
+
+volumes:
+    mysql:
+        driver: local
