@@ -12,9 +12,12 @@ RUN apt-get update && apt-get install -y \
     zip \
     unzip \
     bash \
+    libpq-dev \
+    libfreetype6-dev \
+    libjpeg62-turbo-dev \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd sockets
+RUN docker-php-ext-install pdo pdo_pgsql mbstring exif pcntl bcmath gd sockets
 
 RUN pecl install -o -f redis \
     && docker-php-ext-enable redis
