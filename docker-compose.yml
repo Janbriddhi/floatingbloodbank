@@ -60,6 +60,19 @@ services:
           - postgres:/var/lib/postgressql
         networks:
           - laravel
+    pgadmin:
+        image: dpage/pgadmin4
+        container_name: pgadmin
+        restart: always
+        environment:
+            PGADMIN_DEFAULT_EMAIL: admin@email.com
+            PGADMIN_DEFAULT_PASSWORD: admin
+        ports:
+             - "5050:80"
+        networks:
+             - laravel
+        depends_on:
+             - postgres
 
 networks:
     laravel:
