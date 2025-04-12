@@ -11,6 +11,9 @@ jobs:
     steps:
       - name: "Clone repository"
         uses: actions/checkout@v4
+      - name: Debug HOST variable
+        run: echo "Host: ${{ secrets.FLOATBACK_HOST }}"
+      
       
       - name: copy file via ssh key
         uses: appleboy/scp-action@v0.1.7
