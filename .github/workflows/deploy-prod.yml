@@ -12,7 +12,7 @@ jobs:
       - name: "Clone repository"
         uses: actions/checkout@v4
       - name: Debug HOST variable
-        run:  "echo Host: ${{ secrets.FLOATBACK_HOST }}"
+        run:  "echo Host: 147.79.70.205"
       
       
       - name: copy file via ssh key
