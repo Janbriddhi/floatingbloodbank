@@ -12,12 +12,12 @@ jobs:
       - name: "Clone repository"
         uses: actions/checkout@v4
       
-      - name: copy file via ssh password
+      - name: copy file via ssh key
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.FLOATBACK_HOST }}
           username: ${{ secrets.FLOATBACK_USERNAME }}
-          password: ${{ secrets.FLOATBACK_PASSWORD }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
           source: "."
           target: "/floatingbloodbank"
 
@@ -26,7 +26,7 @@ jobs:
         with:
           host: ${{ secrets.FLOATBACK_HOST }}
           username: ${{ secrets.FLOATBACK_USERNAME }}
-          password: ${{ secrets.FLOATBACK_PASSWORD }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: | 
             cd /floatingbloodbank
             sudo chown -R jan:users /floatingbloodbank
