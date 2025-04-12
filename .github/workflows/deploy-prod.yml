@@ -1,4 +1,4 @@
-name: "deploy-prod"
+name: "deploy"
 
 on:
   push:
@@ -27,7 +27,8 @@ jobs:
         with:
           host: ${{ secrets.FLOATBACK_HOST }}
           username: ${{ secrets.FLOATBACK_USERNAME }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          key: |
+                ${{ secrets.SSH_PRIVATE_KEY }}
           script: | 
             cd /floatingbloodbank
             sudo chown -R jan:users /floatingbloodbank
