@@ -18,8 +18,8 @@ jobs:
       - name: copy file via ssh key
         uses: appleboy/scp-action@v0.1.7
         with:
-          host: ${{ secrets.FLOATBACK_HOST }}
-          username: ${{ secrets.FLOATBACK_USERNAME }}
+          host: "147.79.70.205"
+          username: "jan"
           key: |
              ${{ secrets.SSH_PRIVATE_KEY }}
           source: "."
@@ -28,8 +28,8 @@ jobs:
       - name: "Deploy Application"
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ secrets.FLOATBACK_HOST }}
-          username: ${{ secrets.FLOATBACK_USERNAME }}
+          host: "147.79.70.205"
+          username: "jan"
           key: |
                 ${{ secrets.SSH_PRIVATE_KEY }}
           script: | 
