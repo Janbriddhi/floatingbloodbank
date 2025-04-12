@@ -12,7 +12,6 @@ jobs:
       - name: "Clone repository"
         uses: actions/checkout@v4
       
-      - uses: actions/checkout@v4
       - name: copy file via ssh password
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -22,21 +21,21 @@ jobs:
           source: "."
           target: "/floatingbloodbank"
 
-      - name: "Create Time"
+      - name: "Deploy Application"
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.FLOATBACK_HOST }}
           username: ${{ secrets.FLOATBACK_USERNAME }}
           password: ${{ secrets.FLOATBACK_PASSWORD }}
           script: | 
-            sudo chown -R jan:users
-            sudo chmod -R 775
             cd /floatingbloodbank
-            docker compose up -d
-            docker compose exec app bash
-            composer install --no-dev --no-progress -a
-            php artisan optimize
-            npm install
+            sudo chown -R jan:users /floatingbloodbank
+            sudo chmod -R 775 /floatingbloodbank
+            docker compose down
+            docker compose up -d --build
+            docker compose exec -T app composer install --no-dev --no-progress -a
+            docker compose exec -T app php artisan optimize
+            docker compose exec -T app npm install
 
           
  
