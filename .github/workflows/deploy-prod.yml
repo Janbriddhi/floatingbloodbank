@@ -4,6 +4,11 @@ on:
   push:
     branches:
       - main
+
+permissions:
+    id-token: right
+    contents: read
+    
 jobs:
   build_deploy:
     runs-on: ubuntu-latest
@@ -11,15 +16,40 @@ jobs:
     steps:
       - name: "Clone repository"
         uses: actions/checkout@v4
-      - name: Debug HOST variable
-        run:  "echo Host: 147.79.70.205"
       
+      - name: "Importar secrets"
+        id: secrets
+        uses: hashicorp/vault-action@v3
+        with:
+          method: jwt
+          url: http://147.79.70.205:8200/
+          role: floatbank.deploy-prod
+          secrets: | 
+            /enviroments/data/PROD/floatbank/deploy TOKEN_DOCKER_HUB;
+
+      - name: "builder"
+        uses: docker/setup-buildx-action@v3
       
+      - name: Define TAG e VERSION
+        id: tag_info
+        run: |
+          TAG="${{ github.ref_name }}"
+          VERSION="$TAG"
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+        
+      - name: "build dockerfile"
+        run: | 
+          docker build -t lucaslopeslima95/floatbank:${{ steps.tag_info.outputs.VERSION }} . 
+          docker login -u lucaslopeslima95 -p ${{ steps.secrets.outputs.TOKEN_DOCKER_HUB }}
+          docker push lucaslopeslima95/floatbank:${{steps.tag_info.outputs.VERSION }}
+          
+          
       - name: copy file via ssh key
         uses: appleboy/scp-action@v0.1.7
         with:
-          host: "147.79.70.205"
-          username: "jan"
+          host: ${{ secrets.FLOATBANK_HOST }}
+          username: ${{ secrets.FLOATBANK_USERNAME }}
           key: |
              ${{ secrets.SSH_PRIVATE_KEY }}
           source: "."
@@ -28,19 +58,14 @@ jobs:
       - name: "Deploy Application"
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: "147.79.70.205"
-          username: "jan"
+          host: ${{ secrets.FLOATBANK_HOST }}
+          username: ${{ secrets.FLOATBANK_USERNAME }}
           key: |
                 ${{ secrets.SSH_PRIVATE_KEY }}
           script: | 
             cd /floatingbloodbank
-            sudo chown -R jan:users /floatingbloodbank
-            sudo chmod -R 775 /floatingbloodbank
-            docker compose down
-            docker compose up -d --build
-            docker compose exec -T app composer install --no-dev --no-progress -a
-            docker compose exec -T app php artisan optimize
-            docker compose exec -T app npm install
+            docker compose up -d floatbank
+            
 
           
  

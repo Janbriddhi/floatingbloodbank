@@ -1,0 +1,18 @@
+services:
+  floatbank:
+    image: lucaslopeslima95/floatbank:${IMAGE_TAG:-latest}
+    pull_policy: always
+    restart: always
+    networks:
+      - npm-networks
+    environment:
+      - TZ=America/Sao_Paulo
+    deploy:
+      resource:
+        limits:
+          memory: 256M
+          cpus: '0.25'
+networks:
+  npm-net:
+    external: true
+    
