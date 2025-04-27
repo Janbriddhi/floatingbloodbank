@@ -126,6 +126,7 @@ If you prefer running the project without Docker, follow these steps:
 
 For details on the API endpoints, refer to the API documentation (Swagger or Postman collection if available).
 
+
 ---
 
 ## License
