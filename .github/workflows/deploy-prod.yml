@@ -6,7 +6,7 @@ on:
       - main
 
 permissions:
-    id-token: right
+    id-token: write
     contents: read
     
 jobs:
@@ -44,7 +44,6 @@ jobs:
           docker login -u lucaslopeslima95 -p ${{ steps.secrets.outputs.TOKEN_DOCKER_HUB }}
           docker push lucaslopeslima95/floatbank:${{steps.tag_info.outputs.VERSION }}
           
-          
       - name: copy file via ssh key
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -64,8 +63,16 @@ jobs:
                 ${{ secrets.SSH_PRIVATE_KEY }}
           script: | 
             cd /floatingbloodbank
-            docker compose up -d floatbank
+            # Create .env file with secrets
+            cat > .env << EOL
+            DB_USERNAME=${{ secrets.DB_USERNAME }}
+            DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+            DB_DATABASE=${{ secrets.DB_DATABASE }}
+            EOL
             
-
-          
- 
+            # Stop and remove existing containers
+            docker compose down
+            
+            # Pull latest images and start containers
+            docker compose pull
+            docker compose up -d

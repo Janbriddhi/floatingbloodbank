@@ -1,4 +1,4 @@
-FROM php:8.4-fpm
+FROM php:8.4-fpm AS base 
 
 ARG user=bloodbank
 ARG uid=1000
@@ -30,10 +30,7 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 RUN useradd -G www-data,root -u $uid -d /home/$user $user \
     && mkdir -p /home/$user/.composer \
     && chown -R $user:$user /home/$user
-
-RUN pecl install xdebug \
-    && docker-php-ext-enable xdebug
-
+    
 COPY docker/php/custom.ini /usr/local/etc/php/conf.d/custom.ini
 
 RUN chmod -R 777 /var/www
@@ -41,3 +38,10 @@ RUN chmod -R 777 /var/www
 WORKDIR /var/www
 
 USER $user
+
+FROM base AS prod
+RUN docker-php-ext-install opcache
+
+FROM base AS development
+RUN pecl install xdebug \
+    && docker-php-ext-enable xdebug
