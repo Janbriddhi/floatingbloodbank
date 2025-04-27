@@ -6,74 +6,44 @@ on:
       - main
 
 permissions:
-    id-token: write
-    contents: read
-    
+  contents: read
+
 jobs:
   build_deploy:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: "Clone repository"
         uses: actions/checkout@v4
-      
-      - name: "Importar secrets"
-        id: secrets
-        uses: hashicorp/vault-action@v3
-        with:
-          method: jwt
-          url: http://147.79.70.205:8200/
-          role: floatbank.deploy-prod
-          secrets: | 
-            /enviroments/data/PROD/floatbank/deploy TOKEN_DOCKER_HUB;
 
-      - name: "builder"
+      - name: "Setup Docker Buildx"
         uses: docker/setup-buildx-action@v3
-      
-      - name: Define TAG e VERSION
-        id: tag_info
-        run: |
-          TAG="${{ github.ref_name }}"
-          VERSION="$TAG"
-          echo "tag=$TAG" >> $GITHUB_OUTPUT
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-        
-      - name: "build dockerfile"
-        run: | 
-          docker build -t lucaslopeslima95/floatbank:${{ steps.tag_info.outputs.VERSION }} . 
-          docker login -u lucaslopeslima95 -p ${{ steps.secrets.outputs.TOKEN_DOCKER_HUB }}
-          docker push lucaslopeslima95/floatbank:${{steps.tag_info.outputs.VERSION }}
-          
-      - name: copy file via ssh key
+
+      - name: "Copiar arquivos via SSH"
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.FLOATBANK_HOST }}
           username: ${{ secrets.FLOATBANK_USERNAME }}
-          key: |
-             ${{ secrets.SSH_PRIVATE_KEY }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
           source: "."
           target: "/floatingbloodbank"
 
-      - name: "Deploy Application"
+      - name: "Deploy da Aplicação"
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.FLOATBANK_HOST }}
           username: ${{ secrets.FLOATBANK_USERNAME }}
-          key: |
-                ${{ secrets.SSH_PRIVATE_KEY }}
-          script: | 
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
             cd /floatingbloodbank
-            # Create .env file with secrets
+
+            # Criar .env com as secrets
             cat > .env << EOL
             DB_USERNAME=${{ secrets.DB_USERNAME }}
             DB_PASSWORD=${{ secrets.DB_PASSWORD }}
             DB_DATABASE=${{ secrets.DB_DATABASE }}
             EOL
-            
-            
-            # Stop and remove existing containers
+
+            # Subir containers
             docker compose down
-            
-            # Pull latest images and start containers
-            docker compose pull
             docker compose up -d
