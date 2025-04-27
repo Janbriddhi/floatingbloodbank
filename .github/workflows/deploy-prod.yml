@@ -70,6 +70,7 @@ jobs:
             DB_DATABASE=${{ secrets.DB_DATABASE }}
             EOL
             
+            
             # Stop and remove existing containers
             docker compose down
             
